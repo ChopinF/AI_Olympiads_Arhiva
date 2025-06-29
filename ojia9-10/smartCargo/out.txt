@@ -1,0 +1,21 @@
+Index(['ID', 'City A', 'City B', 'Distance', 'Time of Day', 'Weather',
+       'Traffic', 'Road Quality', 'Driver Experience', 'deliver_time'],
+      dtype='object')
+ID                     int64
+City A                object
+City B                object
+Distance               int64
+Time of Day            int64
+Weather               object
+Traffic              float64
+Road Quality           int64
+Driver Experience      int64
+deliver_time           int64
+dtype: object
+['Satu Mare' 'Ploiesti' 'Deva' 'Hunedoara' 'Resita' 'Barlad' 'Pitesti'
+ 'Targu Mures' 'Alba Iulia' 'Iasi' 'Oradea' 'Constanta' 'Craiova'
+ 'Drobeta-Turnu Severin' 'Galati' 'Suceava' 'Buzau' 'Timisoara' 'Vaslui'
+ 'Roman' 'Slatina' 'Braila' 'Bacau' 'Sibiu' 'Bucuresti' 'Cluj-Napoca'
+ 'Botosani' 'Targoviste' 'Focsani' 'Baia Mare' 'Arad' 'Ramnicu Valcea'
+ 'Brasov' 'Tulcea']
+Success

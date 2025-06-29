@@ -1,0 +1,168 @@
+import math
+import pandas as pd
+from typing import Any, Tuple
+from sklearn.model_selection import train_test_split, GridSearchCV
+from sklearn.ensemble import RandomForestClassifier
+from sklearn.metrics import mean_absolute_error, mean_squared_error, r2_score
+import csv
+import joblib
+from dateutil import parser
+
+rename_map = {
+    "CustomerID": "Customer_ID",
+    "AnnualIncome": "Annual_Income",
+    "MonthlyInhandSalary": "Monthly_Inhand_Salary",
+    "NumBankAccounts": "Num_Bank_Accounts",
+    "NumCreditCard": "Num_Credit_Card",
+    "InterestRate": "Interest_Rate",
+    "NumofLoan": "Num_of_Loan",
+    "Delayfromduedate": "Delay_from_due_date",
+    "NumofDelayedPayment": "Num_of_Delayed_Payment",
+    "ChangedCreditLimit": "Changed_Credit_Limit",
+    "NumCreditInquiries": "Num_Credit_Inquiries",
+    "CreditMix": "Credit_Mix",
+    "OutstandingDebt": "Outstanding_Debt",
+    "CreditUtilizationRatio": "Credit_Utilization_Ratio",
+    "CreditHistoryAge": "Credit_History_Age",
+    "PaymentofMinAmount": "Payment_of_Min_Amount",
+    "TotalEMIpermonth": "Total_EMI_per_month",
+    "Amountinvestedmonthly": "Amount_invested_monthly",
+    "PaymentBehaviour": "Payment_Behaviour",
+    "MonthlyBalance": "Monthly_Balance",
+    "TypeofLoan": "Type_of_Loan",
+}
+
+
+df_train = pd.read_csv("./train_data.csv")
+df_test = pd.read_csv("./test_data.csv")
+df_test = df_test.rename(columns=rename_map)
+pd.set_option("display.max_columns", None)
+
+df_train.head()
+df_train.info()
+
+# Subtask-uri
+samples = len(df_train)
+avg_debt = df_train[df_train["Credit_Utilization_Ratio"] > 25][
+    "Monthly_Inhand_Salary"
+].mean()
+avg_debt = int(avg_debt)
+unique_months = df_train["Month"].nunique()
+ssn_count = df_train[df_train["SSN"].astype(str).str.endswith("20")]["SSN"].nunique()
+
+task1_df = pd.DataFrame(
+    {
+        "Samples": [samples],
+        "Avg_Debt": [avg_debt],
+        "Unique_Months": [unique_months],
+        "SSN_Count": [ssn_count],
+    }
+)
+task1_df.to_csv("output_1.csv", index=False)
+
+df_train["Age"] = pd.to_numeric(df_train["Age"], errors="coerce")
+df_train["Annual_Income"] = pd.to_numeric(df_train["Annual_Income"], errors="coerce")
+df_train["Num_of_Loan"] = pd.to_numeric(df_train["Num_of_Loan"], errors="coerce")
+df_train["Num_of_Delayed_Payment"] = pd.to_numeric(
+    df_train["Num_of_Delayed_Payment"], errors="coerce"
+)
+df_train["Changed_Credit_Limit"] = pd.to_numeric(
+    df_train["Changed_Credit_Limit"], errors="coerce"
+)
+df_train["Outstanding_Debt"] = pd.to_numeric(
+    df_train["Outstanding_Debt"], errors="coerce"
+)
+df_train["Amount_invested_monthly"] = pd.to_numeric(
+    df_train["Amount_invested_monthly"], errors="coerce"
+)
+df_train["Monthly_Balance"] = pd.to_numeric(
+    df_train["Monthly_Balance"], errors="coerce"
+)
+df_cleaned = df_train.dropna()
+
+
+y = df_cleaned["Credit_Score"]
+cols_to_drop = [
+    "ID",
+    "Customer_ID",
+    "Month",
+    "Name",
+    "SSN",
+    "Occupation",
+    "Type_of_Loan",
+    "Credit_Mix",
+    "Credit_History_Age",
+    "Payment_of_Min_Amount",
+    "Payment_Behaviour",
+    "Credit_Score",
+]
+X = df_cleaned.drop(cols_to_drop, axis=1)
+
+X_train, X_test, y_train, y_test = train_test_split(
+    X, y, test_size=0.2, random_state=42
+)
+X_train = X
+y_train = y
+model = RandomForestClassifier()
+model.fit(X_train, y_train)
+
+y_pred = model.predict(X_test)
+
+
+def clean_dataframe(dfr, df):
+    dfr["Age"] = pd.to_numeric(df["Age"], errors="coerce")
+    dfr["Annual_Income"] = pd.to_numeric(df["Annual_Income"], errors="coerce")
+    dfr["Num_of_Loan"] = pd.to_numeric(df["Num_of_Loan"], errors="coerce")
+    dfr["Num_of_Delayed_Payment"] = pd.to_numeric(
+        df["Num_of_Delayed_Payment"], errors="coerce"
+    )
+    dfr["Changed_Credit_Limit"] = pd.to_numeric(
+        df["Changed_Credit_Limit"], errors="coerce"
+    )
+    dfr["Outstanding_Debt"] = pd.to_numeric(df["Outstanding_Debt"], errors="coerce")
+    dfr["Amount_invested_monthly"] = pd.to_numeric(
+        df["Amount_invested_monthly"], errors="coerce"
+    )
+    dfr["Monthly_Balance"] = pd.to_numeric(df["Monthly_Balance"], errors="coerce")
+    dfr.fillna(dfr.mean(numeric_only=True), inplace=True)
+
+
+clean_dataframe(df_test, df_train)
+
+print(df_test.columns)
+cols_to_drop = [
+    "ID",
+    "Customer_ID",
+    "Month",
+    "Name",
+    "SSN",
+    "Occupation",
+    "Type_of_Loan",
+    "Credit_Mix",
+    "Credit_History_Age",
+    "Payment_of_Min_Amount",
+    "Payment_Behaviour",
+]
+X_final = df_test.drop(cols_to_drop, axis=1)
+y_preds_final = model.predict(X_final)
+
+
+output = pd.DataFrame({"ID": df_test.ID, "Credit_Score": y_preds_final})
+output.to_csv("output_2.csv", index=False)
+
+# === Final Output: Match `main.py.save` structure
+results = []
+
+# Subtasks 1–4 (static summaries)
+results.append((1, 1, samples))  # Subtask 1: total samples
+results.append((2, 1, avg_debt))  # Subtask 2: avg salary with credit utilization > 25
+results.append((3, 1, unique_months))  # Subtask 3: unique months
+results.append((4, 1, ssn_count))  # Subtask 4: SSNs ending with "20"
+
+# Subtask 5 (predictions)
+for idx, pred in zip(df_test["ID"], y_preds_final):
+    results.append((5, idx, pred))
+
+# Save to CSV
+final_df = pd.DataFrame(results, columns=["subtaskID", "datapointID", "answer"])
+final_df.to_csv("final_submission.csv", index=False)
